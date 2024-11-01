@@ -7,8 +7,10 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import ShareButton from '@/app/components/ShareButton';
 
+type Params = Promise<{ id: string }>
+
 interface Props {
-  params: { id: string }
+  params: Params
 }
 
 // 結果データの定義
@@ -47,7 +49,8 @@ const resultData = {
 
 // メタデータの生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const result = resultData[params.id as keyof typeof resultData];
+  const resolvedParams = await params;
+  const result = resultData[resolvedParams.id as keyof typeof resultData];
   
   if (!result) {
     return {
@@ -71,15 +74,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function ResultPage({ params }: Props) {
-  const result = resultData[params.id as keyof typeof resultData];
+export default async function ResultPage({ params }: Props) {
+  const resolvedParams = await params;
+  const result = resultData[resolvedParams.id as keyof typeof resultData];
 
   // 無効なIDの場合はトップページにリダイレクト
   if (!result) {
     redirect('/');
   }
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${params.id}`;
+  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${resolvedParams.id}`;
   const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
 
   return (
