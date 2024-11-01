@@ -446,7 +446,7 @@ const AIPersonaQuiz = () => {
     const resultId = getResultId(result.type);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, '');
     const shareUrl = `${baseUrl}/r/${resultId}`;
-    const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
+    const shareText = `私は「${result.type}」タイプでした！\n\n#生成AIペルソナ診断\n\n生成AIペルソナ診断で自分のタイプを確認しよう👇\n`;
     
     const twitterUrl = `https://twitter.com/intent/tweet?` + new URLSearchParams({
       text: shareText,

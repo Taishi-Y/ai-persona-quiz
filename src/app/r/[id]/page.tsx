@@ -169,7 +169,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!result) {
         return {
-            title: 'AIペルソナ診断',
+            title: '生成AIペルソナ診断',
             description: 'あなたのAIペルソナを診断しましょう。',
         }
     }
@@ -183,10 +183,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }).toString();
 
     return {
-        title: `${result.type} | AIペルソナ診断`,
+        title: `${result.type} | 生成AIペルソナ診断`,
         description: result.description,
         openGraph: {
-            title: `${result.type} | AIペルソナ診断`,
+            title: `${result.type} | 生成AIペルソナ診断`,
             description: result.description,
             images: [{
                 url: `https://ai-persona-quiz.vercel.app/api/og?${ogParams}`,
@@ -196,7 +196,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
         twitter: {
             card: 'summary_large_image',
-            title: `${result.type} | AIペルソナ診断`,
+            title: `${result.type} | 生成AIペルソナ診断`,
             description: result.description,
         },
     }
@@ -212,7 +212,7 @@ export default async function ResultPage({ params }: Props) {
     }
 
     const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${resolvedParams.id}`;
-    const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
+    const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\n生成AIペルソナ診断で自分のタイプを確認しよう👇\n`;
 
     // OGP画像のURLを生成（generateMetadataと同じパラメータ形式を使用）
     const ogParams = new URLSearchParams({
