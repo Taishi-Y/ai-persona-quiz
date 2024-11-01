@@ -5,8 +5,8 @@ const nextConfig = {
   },
   optimizeFonts: true,
   experimental: {
-    runtime: 'edge',
-  },
+    runtime: 'edge'
+  }
 }
 
 module.exports = nextConfig
