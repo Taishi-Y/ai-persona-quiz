@@ -5,6 +5,19 @@ import { Share2, X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 
+// 結果タイプからIDを生成する関数を追加
+const getResultId = (resultType: string): string => {
+  const typeToId: Record<string, string> = {
+    "生成AI開発してる人": "developer",
+    "生成AI活用アーティスト": "artist",
+    "生成AI業務効率化検討中の会社員": "business",
+    "生成AIツール体験者": "explorer",
+    "生成AI様子見層": "observer"
+  };
+
+  return typeToId[resultType] || 'general';
+};
+
 const categories = {
   basic: {
     questions: [
@@ -124,7 +137,7 @@ const AIPersonaQuiz = () => {
         setResult(calculatePersona(newScores));
       }
     }
-  }, [answers, currentQuestionIndex, currentQuestions.length, currentCategory, categoryScores, calculatePersona]);
+  }, [answers, currentQuestionIndex, currentQuestions.length, currentCategory, categoryScores]);
 
   // タッチ・マウス操作のハンドラー
   const handleStart = (clientX: number) => {
@@ -164,17 +177,13 @@ const AIPersonaQuiz = () => {
   const shareToX = () => {
     if (!result) return;
     
-    const resultUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/result?` + new URLSearchParams({
-      type: result.type,
-      description: result.description,
-      badges: result.badges.join(',')
-    }).toString();
-  
+    const resultId = getResultId(result.type);
+    const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${resultId}`;
     const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
     
     const twitterUrl = `https://twitter.com/intent/tweet?` + new URLSearchParams({
       text: shareText,
-      url: resultUrl,
+      url: shareUrl,
       via: 'taishi_jade',
     }).toString();
     
