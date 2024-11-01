@@ -79,7 +79,6 @@ const categories = {
   }
 };
 
-// 結果の型定義
 interface QuizResult {
   type: string;
   percentage: string;
@@ -333,11 +332,17 @@ const AIPersonaQuiz = () => {
   const [result, setResult] = useState<QuizResult | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // スマートフォンでのスクロールを防止する
+  // アニメーション用のstate
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+  const [currentQuestionText, setCurrentQuestionText] = useState(
+    categories[currentCategory as keyof typeof categories].questions[currentQuestionIndex]
+  );
+
+  // スマートフォンでのスクロールを防止
   useEffect(() => {
     const preventDefault = (e: Event) => e.preventDefault();
     
-    // タッチ操作によるスクロールを防止
     document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
@@ -345,7 +350,6 @@ const AIPersonaQuiz = () => {
     document.addEventListener('touchmove', preventDefault, { passive: false });
     
     return () => {
-      // クリーンアップ時に設定を元に戻す
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
@@ -359,49 +363,68 @@ const AIPersonaQuiz = () => {
   const answeredQuestions = answers.length;
 
   const handleAnswer = useCallback((answer: boolean) => {
-    const newAnswers = [...answers, answer];
-    setAnswers(newAnswers);
+    if (isTransitioning) return;
     
-    if (currentQuestionIndex < currentQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      const categoryScore = newAnswers.slice(-currentQuestions.length).filter(a => a).length / currentQuestions.length;
-      const newScores = { ...categoryScores, [currentCategory]: categoryScore };
-      setCategoryScores(newScores);
+    setIsTransitioning(true);
+    setSlideDirection(answer ? 'right' : 'left');
+    
+    setTimeout(() => {
+      const newAnswers = [...answers, answer];
+      setAnswers(newAnswers);
       
-      const categoryKeys = Object.keys(categories);
-      const currentIndex = categoryKeys.indexOf(currentCategory);
-      const nextCategory = categoryKeys[currentIndex + 1];
-      
-      if (nextCategory) {
-        setCurrentCategory(nextCategory);
-        setCurrentQuestionIndex(0);
+      if (currentQuestionIndex < currentQuestions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
-        setResult(calculatePersona(newScores));
+        const categoryScore = newAnswers.slice(-currentQuestions.length).filter(a => a).length / currentQuestions.length;
+        const newScores = { ...categoryScores, [currentCategory]: categoryScore };
+        setCategoryScores(newScores);
+        
+        const categoryKeys = Object.keys(categories);
+        const currentIndex = categoryKeys.indexOf(currentCategory);
+        const nextCategory = categoryKeys[currentIndex + 1];
+        
+        if (nextCategory) {
+          setCurrentCategory(nextCategory);
+          setCurrentQuestionIndex(0);
+        } else {
+          setResult(calculatePersona(newScores));
+          return;
+        }
       }
-    }
-  }, [answers, currentQuestionIndex, currentQuestions.length, currentCategory, categoryScores]);
 
-  // タッチ・マウス操作のハンドラー
+      setTimeout(() => {
+        const nextQuestionText = currentQuestionIndex < currentQuestions.length - 1
+          ? currentQuestions[currentQuestionIndex + 1]
+          : categories[Object.keys(categories)[Object.keys(categories).indexOf(currentCategory) + 1] as keyof typeof categories]?.questions[0];
+        
+        setCurrentQuestionText(nextQuestionText);
+        setSlideDirection(null);
+        setIsTransitioning(false);
+        setOffsetX(0);
+      }, 50);
+    }, 300);
+  }, [answers, currentQuestionIndex, currentQuestions, currentCategory, categoryScores, isTransitioning]);
+
   const handleStart = (clientX: number) => {
+    if (isTransitioning) return;
     setIsDragging(true);
     setStartX(clientX);
   };
 
   const handleMove = (clientX: number) => {
-    if (!isDragging) return;
+    if (!isDragging || isTransitioning) return;
     const offset = clientX - startX;
     setOffsetX(offset);
   };
 
   const handleEnd = useCallback(() => {
-    if (!isDragging) return;
+    if (!isDragging || isTransitioning) return;
     setIsDragging(false);
     if (Math.abs(offsetX) > 100) {
       handleAnswer(offsetX > 0);
     }
     setOffsetX(0);
-  }, [isDragging, offsetX, handleAnswer]);
+  }, [isDragging, offsetX, handleAnswer, isTransitioning]);
 
   const handleMouseDown = (e: React.MouseEvent) => handleStart(e.clientX);
   const handleMouseMove = (e: React.MouseEvent) => handleMove(e.clientX);
@@ -421,7 +444,8 @@ const AIPersonaQuiz = () => {
     if (!result) return;
     
     const resultId = getResultId(result.type);
-    const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${resultId}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, '');
+    const shareUrl = `${baseUrl}/r/${resultId}`;
     const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
     
     const twitterUrl = `https://twitter.com/intent/tweet?` + new URLSearchParams({
@@ -433,12 +457,11 @@ const AIPersonaQuiz = () => {
     window.open(twitterUrl, '_blank');
   };
 
-  // 結果画面のレンダリング
   if (result) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 overflow-hidden">
         <div className="h-full w-full flex flex-col items-center justify-center px-4">
-          <Card className="w-full bg-white/80 backdrop-blur-lg shadow-xl border-0">
+          <Card className="w-full max-w-xl bg-white/80 backdrop-blur-lg shadow-xl border-0">
             <CardContent className="p-6">
               <div className="text-center">
                 <div className="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm mt-4 mb-6">
@@ -460,7 +483,7 @@ const AIPersonaQuiz = () => {
                 </div>
                 <p className="text-gray-700 mb-6 text-sm">{result.description}</p>
                 <div className="flex gap-3 justify-center">
-                  <Button 
+                  <Button
                     onClick={shareToX}
                     className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white transform transition-all duration-200 hover:scale-105"
                   >
@@ -470,9 +493,9 @@ const AIPersonaQuiz = () => {
               </div>
             </CardContent>
           </Card>
-          <a 
-            href="https://x.com/taishi_jade" 
-            target="_blank" 
+          <a
+            href="https://x.com/taishi_jade"
+            target="_blank"
             rel="noopener noreferrer"
             className="mt-4 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
@@ -483,11 +506,10 @@ const AIPersonaQuiz = () => {
     );
   }
 
-  // 質問画面のレンダリング
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 overflow-hidden">
       <div className="h-full w-full flex flex-col items-center justify-center px-4">
-        <div className="w-full">
+        <div className="w-full max-w-xl mx-auto">
           <div className="mb-8 text-center">
             <div className="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm">
               Question {answeredQuestions + 1} / {totalQuestions}
@@ -497,9 +519,16 @@ const AIPersonaQuiz = () => {
           <div className="relative">
             <Card
               ref={cardRef}
-              className="w-full bg-white/80 backdrop-blur-lg shadow-xl border-0 cursor-grab active:cursor-grabbing transition-all"
+              className={`w-full bg-white/80 backdrop-blur-lg shadow-xl border-0 cursor-grab active:cursor-grabbing transition-all duration-300 transform
+                ${isTransitioning ? (
+                  slideDirection === 'right' 
+                    ? 'translate-x-full opacity-0 rotate-12' 
+                    : '-translate-x-full opacity-0 -rotate-12'
+                ) : ''}`}
               style={{
-                transform: `translateX(${offsetX}px) rotate(${offsetX * 0.1}deg)`,
+                transform: isDragging 
+                  ? `translateX(${offsetX}px) rotate(${offsetX * 0.1}deg)` 
+                  : undefined
               }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -509,21 +538,21 @@ const AIPersonaQuiz = () => {
               onTouchEnd={handleTouchEnd}
             >
               <CardContent className="p-6">
-                <div className="min-h-[160px] flex flex-col justify-between">
+              <div className="min-h-[160px] flex flex-col justify-between">
                   <div className="flex items-center justify-center flex-1 mt-6">
-                    <h2 className="text-xl font-semibold text-gray-800 text-center">
-                      {currentQuestions[currentQuestionIndex]}
+                    <h2 className="text-xl font-semibold text-gray-800 text-center opacity-100 transition-opacity duration-300">
+                      {currentQuestionText}
                     </h2>
                   </div>
                   
                   <div className="flex justify-between items-center mt-6">
-                    <div className={`transition-opacity ${offsetX < -50 ? 'opacity-100' : 'opacity-30'}`}>
+                    <div className={`transition-opacity duration-200 ${offsetX < -50 ? 'opacity-100' : 'opacity-30'}`}>
                       <div className="flex items-center text-red-500">
                         <X className="w-5 h-5 mr-2" />
                         <span className="text-sm">いいえ</span>
                       </div>
                     </div>
-                    <div className={`transition-opacity ${offsetX > 50 ? 'opacity-100' : 'opacity-30'}`}>
+                    <div className={`transition-opacity duration-200 ${offsetX > 50 ? 'opacity-100' : 'opacity-30'}`}>
                       <div className="flex items-center text-green-500">
                         <span className="text-sm">はい</span>
                         <Check className="w-5 h-5 ml-2" />
@@ -538,7 +567,8 @@ const AIPersonaQuiz = () => {
               <Button
                 variant="outline"
                 onClick={() => handleAnswer(false)}
-                className="bg-white/80 hover:bg-white/90"
+                className="bg-white/80 hover:bg-white/90 transition-all duration-200 hover:scale-105"
+                disabled={isTransitioning}
               >
                 <ChevronLeft className="w-4 h-4 mr-2" />
                 <span className="text-sm">いいえ</span>
@@ -546,7 +576,8 @@ const AIPersonaQuiz = () => {
               <Button
                 variant="outline"
                 onClick={() => handleAnswer(true)}
-                className="bg-white/80 hover:bg-white/90"
+                className="bg-white/80 hover:bg-white/90 transition-all duration-200 hover:scale-105"
+                disabled={isTransitioning}
               >
                 <span className="text-sm">はい</span>
                 <ChevronRight className="w-4 h-4 ml-2" />
