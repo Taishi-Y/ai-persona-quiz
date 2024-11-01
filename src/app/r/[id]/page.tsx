@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import ShareButton from '@/app/components/ShareButton';
-import { useMemo } from 'react';
 
 type Params = Promise<{ id: string }>
 
@@ -66,6 +65,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
             title: `${result.type} | AIペルソナ診断`,
             description: result.description,
+            images: [{
+                url: `https://ai-persona-quiz.vercel.app/api/og?type=${result.type}`,
+                width: 1200,
+                height: 630,
+            }],
         },
         twitter: {
             card: 'summary_large_image',
@@ -88,13 +92,10 @@ export default async function ResultPage({ params }: Props) {
     const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const ogImage = useMemo(() => {
-        return `https://ai-persona-quiz.vercel.app/api/og?title=${result.type}`;
-    }, [result.type]);
+    const ogImage = `https://ai-persona-quiz.vercel.app/api/og?title=${result.type}`;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 p-4 flex flex-col items-center justify-center">
-            <meta property="og:image" content={ogImage} />
             <Card className="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl border-0">
                 <CardContent className="p-8">
                     <div className="text-center">
