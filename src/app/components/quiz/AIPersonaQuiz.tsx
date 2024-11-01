@@ -39,42 +39,42 @@ const getResultId = (resultType: string): string => {
 const categories = {
   attitude: {
     questions: [
-      "AIに対して前向きな気持ちがありますか？",
-      "AIの発展に不安を感じることがありますか？",
-      "AIの影響力は今後も拡大すると思いますか？",
-      "AI開発は慎重に進めるべきだと思いますか？"
+      "生成AIは人類の進歩に貢献すると思いますか？",
+      "生成AIの利用には規制が必要だと思いますか？", // 逆転項目
+      "生成AIの進歩のスピードは適切だと思いますか？",
+      "生成AIと人間は共存できると思いますか？"
     ]
   },
   experience: {
     questions: [
-      "AIツールを日常的に使用していますか？",
-      "AI関連の勉強会や講演に参加したことがありますか？",
-      "職場でAIツールの導入を提案したことがありますか？",
-      "AI関連の記事や書籍をよく読みますか？"
+      "過去1ヶ月以内に3回以上生成AIを使用しましたか？",
+      "生成AI関連のイベントやコミュニティに所属していますか？",
+      "職場や学校で生成AIを活用していますか？",
+      "ChatGPT以外の生成AIも使用していますか？"
     ]
   },
   technical: {
     questions: [
-      "プログラミングでAIを扱った経験がありますか？",
-      "機械学習の仕組みを理解していますか？",
-      "AIモデルの学習や調整をしたことがありますか？",
-      "AI開発環境を構築したことがありますか？"
+      "APIを使って生成AIを利用したことがありますか？",
+      "プロンプトエンジニアリングの知識がありますか？",
+      "生成AIモデルの仕組みを他人に説明できますか？",
+      "生成AIを使ったアプリやサービスを開発したことがありますか？"
     ]
   },
   creative: {
     questions: [
-      "AIを使って作品を作ったことがありますか？",
-      "AIと人間の共創について考えることがありますか？",
-      "AIを使った新しい表現方法を探っていますか？",
-      "AIで制作した作品を公開したことがありますか？"
+      "生成AIを使って収益化できる作品を作ったことがありますか？",
+      "生成AIと協働して作品制作のワークフローを確立していますか？",
+      "生成AIを使った独自の表現技法を確立していますか？",
+      "生成AIを使った作品を継続的に発表していますか？"
     ]
   },
   business: {
     questions: [
-      "AI関連のビジネスプランがありますか？",
-      "AI導入による収益化を検討していますか？",
-      "AI関連の投資や市場分析をしていますか？",
-      "AIを使った副業を考えていますか？"
+      "生成AI関連の具体的な収益計画がありますか？",
+      "生成AIを活用した事業を立ち上げていますか？",
+      "生成AI関連の市場調査や競合分析をしていますか？",
+      "生成AIを使った製品やサービスに投資していますか？"
     ]
   }
 };
@@ -105,8 +105,8 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
   // 否定的な態度スコアを計算 (attitudeScoreの逆数)
   const negativeAttitude = 1 - attitudeScore;
 
-  // 各ペルソナの判定条件
-  if (techScore > 0.9 && expScore > 0.8) {
+  // 各ペルソナの判定条件を厳格化
+  if (techScore > 0.95 && expScore > 0.9 && businessScore > 0.8) {
     return {
       type: "生成AI開発してる人",
       percentage: "0.1%",
@@ -115,7 +115,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (techScore > 0.8 && businessScore > 0.8) {
+  if (techScore > 0.85 && businessScore > 0.85 && expScore > 0.8) {
     return {
       type: "生成AIファーストのプロダクト開発してる人",
       percentage: "0.5%",
@@ -124,7 +124,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (expScore > 0.8 && attitudeScore > 0.8) {
+  if (expScore > 0.9 && attitudeScore > 0.85 && techScore > 0.6) {
     return {
       type: "生成AI教育者",
       percentage: "0.5%",
@@ -133,7 +133,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (businessScore > 0.9 && expScore > 0.7) {
+  if (businessScore > 0.9 && expScore > 0.8 && attitudeScore > 0.7) {
     return {
       type: "生成AI投資家/アナリスト",
       percentage: "0.3%",
@@ -142,7 +142,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (expScore > 0.8 && attitudeScore > 0.7) {
+  if (expScore > 0.85 && attitudeScore > 0.8 && techScore > 0.6) {
     return {
       type: "生成AI倫理/ガバナンス専門家",
       percentage: "0.2%",
@@ -151,7 +151,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (expScore > 0.8 && businessScore > 0.6) {
+  if (expScore > 0.85 && businessScore > 0.7 && attitudeScore > 0.8) {
     return {
       type: "生成AIコミュニティオーガナイザー",
       percentage: "0.4%",
@@ -160,7 +160,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (creativeScore > 0.8 && expScore > 0.7) {
+  if (creativeScore > 0.9 && expScore > 0.8 && attitudeScore > 0.7) {
     return {
       type: "生成AI活用アーティスト",
       percentage: "1%",
@@ -169,7 +169,7 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (techScore > 0.7 && businessScore > 0.7) {
+  if (techScore > 0.8 && businessScore > 0.8 && expScore > 0.7) {
     return {
       type: "生成AIを既存プロダクトに組み込んでる人",
       percentage: "1%",
@@ -178,7 +178,8 @@ const calculatePersona = (scores: Record<string, number>): QuizResult => {
     };
   }
 
-  if (creativeScore > 0.7 && businessScore > 0.6) {
+  // 以下、他の条件は少し緩和して残りの割合を適切に分散
+  if (creativeScore > 0.8 && businessScore > 0.7 && expScore > 0.6) {
     return {
       type: "生成AIコンテンツクリエイター",
       percentage: "2%",
