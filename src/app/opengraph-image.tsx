@@ -2,40 +2,52 @@ import { ImageResponse } from 'next/og'
  
 export const runtime = 'edge'
  
-export const alt = 'AIペルソナ診断'
+// Image metadata
+export const alt = 'About Acme'
 export const size = {
   width: 1200,
   height: 630,
 }
  
 export const contentType = 'image/png'
-
-export default async function og() {
+ 
+// Image generation
+export default async function Image() {
+  // Font
+  // const interSemiBold = fetch(
+  //   new URL('./Inter-SemiBold.ttf', import.meta.url)
+  // ).then((res) => res.arrayBuffer())
+ 
   return new ImageResponse(
     (
+      // ImageResponse JSX element
       <div
         style={{
-          height: '100%',
+          fontSize: 128,
+          background: 'white',
           width: '100%',
+          height: '100%',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundImage: 'linear-gradient(to bottom right, #EEF2FF, #E0E7FF)',
         }}
       >
-        <div tw="flex flex-col items-center justify-center">
-          <h1 tw="text-[60px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
-            AIペルソナ診断
-          </h1>
-          <p tw="text-[30px] text-gray-700 mt-4">
-            あなたのAIとの関わり方を診断します
-          </p>
-        </div>
+        About Acme
       </div>
     ),
+    // ImageResponse options
     {
+      // For convenience, we can re-use the exported opengraph-image
+      // size config to also set the ImageResponse's width and height.
       ...size,
+      // fonts: [
+      //   {
+      //     name: 'Inter',
+      //     data: await interSemiBold,
+      //     style: 'normal',
+      //     weight: 400,
+      //   },
+      // ],
     }
   )
 }
