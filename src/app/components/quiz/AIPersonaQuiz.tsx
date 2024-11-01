@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Share2, X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -102,7 +102,7 @@ const AIPersonaQuiz = () => {
     };
   };
 
-  const handleAnswer = (answer: boolean) => {
+  const handleAnswer = useCallback((answer: boolean) => {
     const newAnswers = [...answers, answer];
     setAnswers(newAnswers);
     
@@ -124,7 +124,7 @@ const AIPersonaQuiz = () => {
         setResult(calculatePersona(newScores));
       }
     }
-  };
+  }, [answers, currentQuestionIndex, currentQuestions.length, currentCategory, categoryScores, calculatePersona]);
 
   // タッチ・マウス操作のハンドラー
   const handleStart = (clientX: number) => {
@@ -138,14 +138,14 @@ const AIPersonaQuiz = () => {
     setOffsetX(offset);
   };
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     if (!isDragging) return;
     setIsDragging(false);
     if (Math.abs(offsetX) > 100) {
       handleAnswer(offsetX > 0);
     }
     setOffsetX(0);
-  };
+  }, [isDragging, offsetX, handleAnswer]);
 
   const handleMouseDown = (e: React.MouseEvent) => handleStart(e.clientX);
   const handleMouseMove = (e: React.MouseEvent) => handleMove(e.clientX);
@@ -159,28 +159,22 @@ const AIPersonaQuiz = () => {
     const handleMouseLeave = () => handleEnd();
     document.addEventListener('mouseleave', handleMouseLeave);
     return () => document.removeEventListener('mouseleave', handleMouseLeave);
-  }, []);
+  }, [handleEnd]);
 
   const shareToX = () => {
     if (!result) return;
     
-    // 診断結果に基づいてOGP画像のURLを生成
-    const ogImageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/og?` + new URLSearchParams({
+    const resultUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/result?` + new URLSearchParams({
       type: result.type,
       description: result.description,
       badges: result.badges.join(',')
     }).toString();
   
-    // シェアテキストを生成
-    const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n${result.description}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
+    const shareText = `私は「${result.type}」タイプでした！\n\n${result.badges.map(b => `#${b}`).join(' ')}\n\nAIペルソナ診断で自分のタイプを確認しよう👇\n`;
     
-    // シェアURL（実際のデプロイ先のURL）
-    const shareUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://ai-persona-quiz.example.com';
-    
-    // シェア用のURLを構築
     const twitterUrl = `https://twitter.com/intent/tweet?` + new URLSearchParams({
       text: shareText,
-      url: shareUrl,
+      url: resultUrl,
       via: 'taishi_jade',
     }).toString();
     

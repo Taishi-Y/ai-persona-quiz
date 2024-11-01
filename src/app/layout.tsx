@@ -5,22 +5,25 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://your-domain.vercel.app'), // あなたのドメインに変更
   title: 'AIペルソナ診断',
   description: 'あなたのAIとの関わり方を診断します',
   openGraph: {
     title: 'AIペルソナ診断',
     description: 'あなたのAIとの関わり方を診断します',
-    images: [{
-      url: '/api/og',
-      width: 1200,
-      height: 630,
-      alt: 'AIペルソナ診断'
-    }],
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'AIペルソナ診断',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@taishi_jade',
     creator: '@taishi_jade',
-    images: '/api/og',
   },
 }
 
