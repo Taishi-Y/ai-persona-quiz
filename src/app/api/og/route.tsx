@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const type = searchParams.get('type') ?? 'AIペルソナ診断';
   const description = searchParams.get('description') ?? 'あなたのAIとの関わり方を診断します';
   const badges = searchParams.get('badges')?.split(',') ?? [];
+  const percentage = searchParams.get('percentage') ?? '??%';
   
   try {
     return new ImageResponse(
@@ -19,63 +20,124 @@ export async function GET(request: Request) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'white',
-            backgroundImage: 'linear-gradient(to bottom right, #EEF2FF, #E0E7FF)',
+            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+            position: 'relative',
           }}
         >
+          {/* 背景グラデーション */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at 10% 20%, rgba(99,102,241,0.15) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(124,58,237,0.15) 0%, transparent 20%)',
+          }} />
+
+          {/* メインコンテンツ */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
-              padding: '40px',
+              gap: '24px',
+              padding: '60px',
+              width: '100%',
             }}
           >
-            <h1
-              style={{
-                fontSize: 60,
-                fontWeight: 'bold',
-                textAlign: 'center',
-                marginBottom: '20px',
-                background: 'linear-gradient(to right, #7C3AED, #2563EB)',
-                backgroundClip: 'text',
-                color: 'transparent',
-              }}
-            >
+            {/* ヘッダー */}
+            <div style={{
+              display: 'flex',
+              background: 'rgba(255,255,255,0.1)',
+              padding: '12px 24px',
+              borderRadius: '999px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}>
+              {/* spanをdivに変更 */}
+              <div style={{
+                fontSize: 28,
+                color: '#FFFFFF',
+                opacity: 0.9,
+              }}>
+                AIペルソナ診断結果
+              </div>
+            </div>
+
+            {/* メインタイトル */}
+            <div style={{
+              display: 'flex',
+              fontSize: 72,
+              fontWeight: 'bold',
+              background: 'linear-gradient(to right, #818CF8, #C084FC)',
+              backgroundClip: 'text',
+              color: 'transparent',
+              textAlign: 'center',
+            }}>
               {type}
-            </h1>
-            <p
-              style={{
-                fontSize: 30,
-                textAlign: 'center',
-                marginBottom: '10px',
-                color: '#4B5563',
-              }}
-            >
-              {description}
-            </p>
-            <div
-              style={{
-                display: 'flex',
-                gap: '10px',
-                marginTop: '20px',
-              }}
-            >
+            </div>
+
+            {/* パーセンテージ */}
+            <div style={{
+              display: 'flex',
+              fontSize: 36,
+              color: '#FFFFFF',
+              opacity: 0.8,
+            }}>
+              全体の約{percentage}
+            </div>
+
+            {/* バッジコンテナ */}
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              maxWidth: '800px',
+            }}>
               {badges.map((badge, i) => (
-                <span
+                <div
                   key={i}
                   style={{
-                    backgroundColor: '#DBEAFE',
-                    color: '#2563EB',
-                    padding: '8px 16px',
-                    borderRadius: '9999px',
-                    fontSize: 20,
+                    display: 'flex',
+                    background: 'linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(124,58,237,0.2) 100%)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#FFFFFF',
+                    padding: '12px 24px',
+                    borderRadius: '999px',
+                    fontSize: 24,
                   }}
                 >
                   {badge}
-                </span>
+                </div>
               ))}
+            </div>
+
+            {/* 説明文 */}
+            <div style={{
+              display: 'flex',
+              fontSize: 28,
+              color: '#FFFFFF',
+              opacity: 0.8,
+              textAlign: 'center',
+              maxWidth: '800px',
+            }}>
+              {description}
+            </div>
+          </div>
+
+          {/* フッター */}
+          <div style={{
+            position: 'absolute',
+            bottom: '30px',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              fontSize: 20,
+              color: '#FFFFFF',
+              opacity: 0.6,
+            }}>
+              Created by @taishi_jade
             </div>
           </div>
         </div>
@@ -83,9 +145,13 @@ export async function GET(request: Request) {
       {
         width: 1200,
         height: 630,
+        headers: {
+          'Cache-Control': 'public, max-age=31536000, immutable'
+        }
       }
     )
-  } catch {
+  } catch (e) {
+    console.error(e);
     return new Response(`Failed to generate image`, {
       status: 500,
     })
